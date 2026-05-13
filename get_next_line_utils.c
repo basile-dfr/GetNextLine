@@ -36,24 +36,21 @@ char	*ft_substr(char const *s, unsigned int start, size_t len)
 {
 	char	*str1;
 	size_t	i;
-	size_t	lenstr;
 
-	i = 0;
-	lenstr = ft_strlen(s);
 	if (!s)
 		return (NULL);
-	if (start > lenstr)
-		return (ft_calloc(1, 1));
-	if (start + len > lenstr)
-		len = lenstr - start;
-	str1 = malloc(sizeof(char) * len + 1);
+	if (start > ft_strlen(s))
+		len = 0;
+	else if (start + len > ft_strlen(s))
+		len = ft_strlen(s) - start;
+	str1 = malloc(len + 1);
 	if (!str1)
 		return (NULL);
+	i = 0;
 	while (i < len)
 	{
-		str1[i] = s[start];
+		str1[i] = s[start + i];
 		i++;
-		start++;
 	}
 	str1[i] = '\0';
 	return (str1);
@@ -74,4 +71,30 @@ void	*ft_memcpy(void *dst, const void *src, size_t n)
 		count ++;
 	}
 	return (dst);
+}
+
+char	*ft_strchr(const char *str, int c)
+{
+	size_t			len;
+	size_t			i;
+	unsigned char	n;
+
+	len = 0;
+	i = 0;
+	n = (unsigned char) c;
+	while (str[len] != '\0')
+	{
+		len++;
+	}
+	if (n == '\0')
+		return ((char *) str + len);
+	while (str[i] != '\0')
+	{
+		if (str[i] == n)
+		{
+			return ((char *) str + i);
+		}
+		i++;
+	}
+	return (NULL);
 }
