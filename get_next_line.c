@@ -1,6 +1,18 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: bdefer <bdefer@learner.42.tech>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/05/14 18:15:12 by bdefer            #+#    #+#             */
+/*   Updated: 2026/05/14 18:15:15 by bdefer           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "get_next_line.h"
 
-char	*ft_check_n_join(char *temp, char *buf)
+char	*ft_check_and_join(char *temp, char *buf)
 {
 	char	*keep_temp;
 	int		len;
@@ -26,33 +38,35 @@ char	*ft_check_n_join(char *temp, char *buf)
 	return (temp);
 }
 
-void	ft_startnewline(char **ptr)
+void	ft_keepmem_startnewline(char **ptr_temp)
 {
 	char	*keep_temp;
 
-	keep_temp = ft_strdup(ft_strchr(*ptr, '\n') + 1);
-	free(*ptr);
-	*ptr = keep_temp;
+	keep_temp = ft_strdup(ft_strchr(*ptr_temp, '\n') + 1);
+	free(*ptr_temp);
+	*ptr_temp = keep_temp;
 }
 
-char	*ft_newline_n_free(char **ptr_temp, ssize_t i)
+char	*ft_newline_and_free(char **ptr_temp, ssize_t bytesread)
 {
 	char	*line;
+	int		len;
 
 	line = NULL;
-	if (!*ptr_temp)
-		return(NULL);
-	if (**ptr_temp && i == 0) 
+	if (!*ptr_temp || !**ptr_temp)
+		return (NULL);
+	if (**ptr_temp && bytesread == 0)
 	{
 		line = ft_strdup(*ptr_temp);
 		free(*ptr_temp);
 		*ptr_temp = NULL;
 		return (line);
 	}
-	if (ft_strchr(*ptr_temp, '\n') != NULL)
+	if (ft_strchr(*ptr_temp, '\0') != NULL)
 	{
-		line = ft_substr(*ptr_temp, 0, (ft_strlen(*ptr_temp) - ft_strlen(ft_strchr(*ptr_temp, '\n'))) + 1);
-		ft_startnewline(ptr_temp);
+		len = (ft_strlen(*ptr_temp) - ft_strlen(ft_strchr(*ptr_temp, '\n')));
+		line = ft_substr(*ptr_temp, 0, len + 1);
+		ft_keepmem_startnewline(ptr_temp);
 		return (line);
 	}
 	free(*ptr_temp);
@@ -60,50 +74,50 @@ char	*ft_newline_n_free(char **ptr_temp, ssize_t i)
 	return (NULL);
 }
 
-char    *get_next_line(int fd)
+char	*get_next_line(int fd)
 {
-	static char	*temp;
-	char		*buf;
-	ssize_t		read_bytes;
+	static char		*temp;
+	ssize_t			bytesread;
+	char			*buf;
 
 	buf = NULL;
-	read_bytes = 1;
+	bytesread = 1;
 	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
-	while (read_bytes != 0)
+	while (bytesread != 0)
 	{
 		if (temp && ft_strchr(temp, '\n') != NULL)
-			return (ft_newline_n_free(&temp, read_bytes));
+			return (ft_newline_and_free(&temp, bytesread));
 		buf = (char *)malloc(BUFFER_SIZE + 1);
 		if (!buf)
 			return (NULL);
-		read_bytes = read(fd, buf, BUFFER_SIZE);
-		if (read_bytes <= 0)
-			return (free(buf), ft_newline_n_free(&temp, read_bytes));
-		buf[read_bytes] = '\0';
-		temp = ft_check_n_join(temp, buf);
-		free (buf);
+		bytesread = read(fd, buf, BUFFER_SIZE);
+		if (bytesread <= 0)
+			return (free(buf), ft_newline_and_free(&temp, bytesread));
+		buf[bytesread] = '\0';
+		temp = ft_check_and_join(temp, buf);
+		free(buf);
 		buf = NULL;
 	}
-	return (ft_newline_n_free(&temp, read_bytes));
+	return (ft_newline_and_free(&temp, bytesread));
 }
-
-int	main()
+/*
+int	main(void)
 {
-	int		fd;
-	char	*result;
+	int		fd;	
+	char	*line;
 
-	result = NULL;
-	fd = open("./test.txt", O_RDONLY);
+	line = NULL;
+	fd = open("./long_line.txt", O_RDONLY);
 	if (fd < 0)
 		return (0);
-	result = get_next_line(fd);
-	while (result != NULL)
+	line = get_next_line(fd);
+	while (line != NULL)
 	{
-		printf("%s", result);
-		free(result);
-		result = get_next_line(fd);
+		printf("%s", line);
+		free(line);
+		line = get_next_line(fd);
 	}
 	close(fd);
 	return (0);
-}
+}*/
